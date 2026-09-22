@@ -231,4 +231,73 @@ AIGCGame/
 
 **约束**：表现层只读规则层结果并画出来；规则层绝不 import pygame；关卡坐标只进 levels.json，不写死在规则里。
 
-**落地进度**：I1–I3 基础功能完整，P0（E1 关卡+solver、E2 撤销、E3 受阻动画）、E4 评分、E5 存档、选关界面、E6 摄像机、E7 霓虹 UI、E8 音效、E9 打包配置均已通过。剩余：E9 实际构建验证、I4（回归 + README + 截图 + 博客）。
+**落地进度**：I1–I3 基础功能完整，E1–E9 扩展全部通过；README + 博客 + GitHub 已发布。剩余：E9 exe 实际构建验证（可选）。
+
+---
+
+## 8. 扩展阶段总览（E1–E9）
+
+| 阶段 | 时间 | 目标 | 状态 |
+|---|---|---|---|
+| E1 | 09-22 | 关卡 + Solver | ✅ |
+| E2 | 09-22 | 撤销一步 | ✅ |
+| E3 | 09-22 | 碰撞返回动画 | ✅ |
+| E4 | 09-22 | 得分 / 计时 / 星级 | ✅ |
+| E5 | 09-22 | 保存进度 | ✅ |
+| E6 | 09-22 | 视口拖动 / 缩放 | ✅ |
+| E7 | 09-22 | UI / 美术优化 | ✅ |
+| E8 | 09-22 | 音效 | ✅ |
+| E9 | 09-22 | exe 打包 | 配置就绪（待实测） |
+| I4 | 09-23 | 回归 / README / 博客 / 发布 | ✅ 已发布 |
+
+---
+
+## 9. 扩展开发记录
+
+### E1 关卡 + Solver
+**目标**：关卡扩至 8 关，新增自动求解与验盘。**修改文件**：levels.json、game/solver.py、test_rules.py。**设计**：把「谁必须先被清除」建模为 blocker→blocked 依赖图；单调空间下 Kahn 拓扑排序等价于「不断选可飞箭」，无需 DFS。**测试**：`test_solver_all_levels`、`test_reference_solution` 通过。
+
+### E2 撤销一步
+**目标**：误点后可回退最近一次结算。**修改文件**：game/rules.py、game/scenes.py。**设计**：结算前快照入栈（上限 20）；回退盘面 + 余次，计时不回退。**测试**：`test_undo_fly`、`test_undo_blocked` 通过。
+
+### E3 碰撞返回动画
+**目标**：完整表达「前冲 → 碰撞 → 回位」。**修改文件**：game/anim.py、game/view.py、game/scenes.py。**设计**：前冲 0.18s（ease-out）→ 停顿 0.18–0.25s（碰撞圆环闪烁）→ 回位 0.25–0.58s（ease-in-out）。**测试**：冒烟 `BlockedReturn` 通过。
+
+### E4 得分 / 计时 / 星级
+**目标**：通关后按准确度与用时评分。**修改文件**：game/score.py、game/scenes.py。**设计**：总分 = 700×准确度 + 300×时间分；`par_time` 内满分，超时线性衰减；≥900 三星。**测试**：`test_score` 通过。
+
+### E5 保存进度
+**目标**：解锁关、最佳分、进行中快照可持久化。**修改文件**：game/save.py、game/scenes.py。**设计**：写 `%APPDATA%/YiJianYouYiJian/save.json`；损坏回退默认；每次结算后自动保存。**测试**：`test_save_roundtrip` 通过。
+
+### E6 视口拖动 / 缩放
+**目标**：大盘（如 9×10）可完整观察与操作。**修改文件**：game/view.py、game/scenes.py。**设计**：`BoardView` 维护 zoom/pan；滚轮以鼠标为中心缩放、中键平移、Home 归中、`fit` 自动适配。**测试**：冒烟通过。
+
+### E7 UI / 美术优化
+**目标**：霓虹 Arcade 风格。**修改文件**：game/view.py。**设计**：深色底 + 霓虹（青箭头 / 红受阻 / 金星级）；HUD 显示关卡 / 余箭 / 余次 / 用时。**测试**：冒烟通过。
+
+### E8 音效
+**目标**：结算 / 撤销 / 胜负音效反馈。**修改文件**：game/audio.py、assets/sfx/*.wav、tools/gen_sfx.py、game/scenes.py。**设计**：程序合成 6 自制 WAV；`Audio` 加载失败静默跳过。**测试**：冒烟通过。
+
+### E9 exe 打包
+**目标**：无开发环境可运行。**修改文件**：game/pathing.py、yi_jian.spec、requirements.txt、build.bat。**设计**：`resource_path` 兼容 onefile；spec 打包 levels.json + assets。**测试**：配置就绪，待无 Python 环境实测。
+
+---
+
+## 10. 版本里程碑
+
+| 版本 | 时间 | 内容 |
+|---|---|---|
+| v0.1 基础版 | 09-22 | I1–I3：窗口 / 棋盘 / 四向箭 / 射线 / 飞出受阻 / 余次 / 关卡闭环 / 重开 |
+| v0.2 扩展版 | 09-22 | E1–E9：8 关 + solver、撤销、碰撞动画、评分、存档、摄像机、UI、音效、打包配置 |
+| v1.0 提交版 | 09-23 | 回归 + README + 博客 + GitHub 发布 |
+
+---
+
+## 11. 问题追踪
+
+| ID | 问题 | 阶段 | 严重 | 处理 | 状态 |
+|---|---|---|---|---|---|
+| BUG-001 | L1/L3 参考解与盘面不符 | E1 | 高 | 脚本核验可解性，修正参考序 | 已修复 |
+| BUG-002 | pygame SysFont 抛 TypeError | 策划 | 中 | 改用 Font(path) 直取 msyh.ttc | 已修复 |
+| BUG-003 | L7 大盘超出窗口 | E1 | 中 | 自适应 cell + 摄像机缩放 | 已修复 |
+| BUG-004 | exe 未在无 Python 环境实测 | E9 | 中 | 待实测 | 待验证 |
