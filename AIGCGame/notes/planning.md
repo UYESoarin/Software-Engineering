@@ -146,3 +146,16 @@ flowchart TB
 | 打包可执行文件 | `pyinstaller --onefile` | 低 | 部分（配置就绪，待实际构建验证） |
 
 求解已由 solver.py 落地（依赖图 + 拓扑排序）；提示可直接复用 `Session.can_fly`。基础对局不依赖上述接口是否存在。
+
+### 已落地扩展的操作与设计
+
+| 扩展 | 操作 | 设计要点 | 落点 |
+|---|---|---|---|
+| 更多关卡 / 选关 | 标题「选关」→ 点已解锁关 | 8 关（L0–L7），难度 = 规模 × 依赖深度 × 分支；`solution`/`par_time`/`design_meta` 入表 | levels.json |
+| AI 自动求解 | 规则层 `solver.solve()` | blocker→blocked 依赖图 + Kahn 拓扑排序（单调空间，无需 DFS 回溯） | game/solver.py |
+| 撤销一步 | 对局点「撤销」（无历史禁用） | 结算前快照入栈（上限 20）；回退盘面+余次，**不回退计时** | rules.Session |
+| 得分 / 计时 / 星级 | 通关显示得分/星级/用时/失误 | 总分 = 700×准确度 + 300×时间分；≥900 三星、≥700 两星 | game/score.py |
+| 保存进度 | 每步自动存；标题「继续游戏」 | `%APPDATA%` 下 JSON；存解锁/最佳/进行中；损坏回退默认 | game/save.py |
+| 摄像机 | 滚轮缩放（鼠标为中心）、中键平移、Home 归中 | `fit` 自动适配整盘 + zoom/pan 世界↔屏幕坐标 | view.BoardView |
+| 音效 | 结算/撤销/胜负自动播放 | 自制 6 短音效（程序合成 WAV）；加载失败不阻塞 | game/audio.py |
+| 打包 | 双击 exe 运行 | `pathing.resource_path` 兼容 onefile；spec 打包 levels.json + assets | yi_jian.spec |

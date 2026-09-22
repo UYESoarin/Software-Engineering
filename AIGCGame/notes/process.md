@@ -17,8 +17,9 @@
 | 关卡设计 | 1.5 | 1.5 | 0 |
 | AIGC 辅助开发 | 1.5 | 1.5 | 0 |
 | 测试与修改 | 1.5 | 1.0 | −0.5 |
+| 扩展功能 | 3.0 | 1.5 | |
 | README 与博客撰写 | 2.0 | | |
-| 合计 | 约 13.5 | 10.5（至 I3） | |
+| 合计 | 约 16.5 | 12.0（至 E9） | |
 
 > 实际工时以本人计时为准；上表随增量回填，可观测时间线见第 6 节。
 
@@ -39,9 +40,9 @@
 | I2 核心循环 | Claude Code | 射线结算接入点选、飞出/受阻动画、动画期锁输入 | 规则层单测 + 冒烟通过 | 待 ChatGPT 审查 |
 | I3 关卡闭环 | Claude Code | 结果画面（通过/失败/全通）、清空进下一关、余次耗尽失败、重开按钮 | 规则层单测 + 冒烟通过 | 待 ChatGPT 审查 |
 | 扩展与优化分析 | ChatGPT | extension_development_summary + levels_extension（优先级、solver/undo/动画/评分/存档/打包方案） | 可直接实施，含可运行代码 | 否（采纳为主） |
-| P0 扩展实现 | Claude Code | E1 关卡 L4–L7+solver、E2 撤销、E3 受阻前冲返回 | 规则层 9 项 + 冒烟通过 | 待 ChatGPT 审查 |
+| E1–E3 扩展 | Claude Code | 关卡 L4–L7+solver、撤销、受阻前冲返回 | 规则层 9 项 + 冒烟通过 | 待 ChatGPT 审查 |
 | E4 评分计时 | Claude Code | score.py 评分/星级、PlayScene 计时、结果画面星级、大盘自适应 cell | 规则层 + 冒烟通过 | 待 ChatGPT 审查 |
-| P1 存档+选关+UI | Claude Code | save.py 存档/解锁/最佳分、选关界面、继续游戏、霓虹配色 UI | 规则层 11 项 + 冒烟通过 | 待 ChatGPT 审查 |
+| E5/E7 存档+选关+UI | Claude Code | save.py 存档/解锁/最佳分、选关界面、继续游戏、霓虹配色 UI | 规则层 11 项 + 冒烟通过 | 待 ChatGPT 审查 |
 | E6/E8/E9 | Claude Code | 摄像机缩放平移、自制音效 + audio.py、pathing.py + PyInstaller 配置 | 规则层 + 冒烟通过 | 待 ChatGPT 审查 |
 
 ---
@@ -72,8 +73,8 @@
 |---|---|
 | 开始 / 游戏 / 结果三画面 | ✅ |
 | 显示关名 / 棋盘 / 余箭 / 余次 / 重开 | ✅ |
-| AIGC ≥3 次记录 | ✅（7 条，见 §2） |
-| 测试 T01–T06 | ✅（自动化 + 冒烟，见 §4） |
+| AIGC ≥3 次记录 | ✅（13 条，见 §2） |
+| 测试 T01–T11 | ✅（自动化 + 冒烟，见 §4） |
 | GitHub + README + 多次 commit | ⏳ 待 I4 |
 | 博客 + PSP | ⏳ 待 I4（PSP 部分回填） |
 
