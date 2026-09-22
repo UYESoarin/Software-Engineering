@@ -1,19 +1,20 @@
 """入口：初始化 pygame，运行「取输入 → 推进 → 画一帧」主循环。"""
 import pygame
 
-from game import levels, scenes
+from game import levels, save, scenes
 
 
 class App:
-    """应用容器：窗口尺寸 + 关卡表，供各场景读取。"""
+    """应用容器：窗口尺寸 + 关卡表 + 进度存档，供各场景读取。"""
 
     WIDTH = 960
     HEIGHT = 640
 
-    def __init__(self):
+    def __init__(self, save_path=None):
         self.w = self.WIDTH
         self.h = self.HEIGHT
         self.levels = levels.load_levels()
+        self.store = save.ProgressStore(save_path)
 
 
 def main():

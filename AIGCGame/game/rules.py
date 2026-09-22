@@ -1,4 +1,4 @@
-"""规则层：盘面、射线判定、余次、关卡快照。
+"""规则层：盘面、射线判定、余次、关卡快照、撤销历史。
 
 本模块不 import pygame，任何显示库都不应出现在这里。
 点选结算返回「结果字典」，表现层只负责把已经发生的结果画出来。
@@ -16,7 +16,7 @@ class Session:
     """一局对局的规则会话。
 
     只读 level（rows/cols/moves/arrows 字段），不修改它；
-    所有可变状态（箭头列表、余次）都留在 Session 内。
+    所有可变状态（箭头列表、余次、撤销历史）都留在 Session 内。
     """
 
     def __init__(self, level):
@@ -25,13 +25,23 @@ class Session:
         self.cols = level["cols"]
         self._initial_arrows = [dict(a) for a in level["arrows"]]
         self._initial_moves = level["moves"]
+        self._history = []        # 撤销栈：每笔结算前的快照
+        self._max_history = 20
         self.reset()
 
     def reset(self):
-        """恢复进入本关时的快照（不是上一次点击前）。"""
+        """恢复进入本关时的快照（不是上一次点击前），并清空撤销栈。"""
         self.arrows = [dict(a) for a in self._initial_arrows]
         self.moves_left = self._initial_moves
         self.arrows_left = len(self.arrows)
+        self._history.clear()
+
+    def load_state(self, arrows, moves_left):
+        """从存档恢复盘面与余次（撤销栈清空）。"""
+        self.arrows = [dict(a) for a in arrows]
+        self.moves_left = int(moves_left)
+        self.arrows_left = len(self.arrows)
+        self._history.clear()
 
     def arrow_at(self, row, col):
         """返回该格箭头在 self.arrows 中的下标，无则 None。"""
@@ -72,25 +82,53 @@ class Session:
         res = self._ray(row, col)
         return res is not None and res[0]
 
+    # ---- 撤销 ----
+    def _snapshot(self):
+        return {"arrows": [dict(a) for a in self.arrows],
+                "moves_left": self.moves_left}
+
+    def _restore(self, state):
+        self.arrows = [dict(a) for a in state["arrows"]]
+        self.moves_left = int(state["moves_left"])
+        self.arrows_left = len(self.arrows)
+
+    @property
+    def can_undo(self):
+        return bool(self._history)
+
+    def undo(self):
+        """撤销最近一次结算（含飞出与失误扣次）；无历史返回 False。"""
+        if not self._history:
+            return False
+        self._restore(self._history.pop())
+        return True
+
     def try_clear(self, row, col):
         """点选结算。
 
         空白格返回 None；否则返回
         {"type": "fly"|"blocked", "arrow": {...}}，
         blocked 额外带 "blocker": {...}。
+        真正结算前保存快照，供撤销。
         """
         res = self._ray(row, col)
         if res is None:
             return None
+        before = self._snapshot()
         can, blocker = res
         idx = self.arrow_at(row, col)
         arrow = self.arrows[idx]
         if not can:
             self.moves_left -= 1
-            return {"type": "blocked", "arrow": arrow, "blocker": self.arrows[blocker]}
-        self.arrows.pop(idx)
-        self.arrows_left = len(self.arrows)
-        return {"type": "fly", "arrow": arrow}
+            result = {"type": "blocked", "arrow": arrow, "blocker": self.arrows[blocker]}
+        else:
+            self.arrows.pop(idx)
+            self.arrows_left = len(self.arrows)
+            result = {"type": "fly", "arrow": arrow}
+        self._history.append(before)
+        if len(self._history) > self._max_history:
+            del self._history[0]
+        return result
 
     @property
     def won(self):

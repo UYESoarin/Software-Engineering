@@ -1,73 +1,5 @@
 [
   {
-    "id": "L0",
-    "name": "教程",
-    "rows": 3,
-    "cols": 5,
-    "moves": 5,
-    "par_time": 10,
-    "arrows": [
-      {"id": "a", "row": 1, "col": 0, "dir": "right"},
-      {"id": "b", "row": 1, "col": 2, "dir": "up"},
-      {"id": "c", "row": 2, "col": 4, "dir": "left"}
-    ],
-    "solution": ["b", "a", "c"]
-  },
-  {
-    "id": "L1",
-    "name": "顺序入门",
-    "rows": 4,
-    "cols": 4,
-    "moves": 3,
-    "par_time": 12,
-    "arrows": [
-      {"id": "a", "row": 0, "col": 0, "dir": "down"},
-      {"id": "b", "row": 0, "col": 3, "dir": "left"},
-      {"id": "c", "row": 2, "col": 0, "dir": "right"},
-      {"id": "d", "row": 2, "col": 2, "dir": "up"},
-      {"id": "e", "row": 3, "col": 3, "dir": "right"}
-    ],
-    "solution": ["d", "c", "a", "b", "e"]
-  },
-  {
-    "id": "L2",
-    "name": "交叉",
-    "rows": 5,
-    "cols": 5,
-    "moves": 3,
-    "par_time": 18,
-    "arrows": [
-      {"id": "b", "row": 0, "col": 4, "dir": "left"},
-      {"id": "a", "row": 1, "col": 1, "dir": "down"},
-      {"id": "c", "row": 1, "col": 3, "dir": "up"},
-      {"id": "d", "row": 2, "col": 0, "dir": "right"},
-      {"id": "x", "row": 2, "col": 2, "dir": "down"},
-      {"id": "f", "row": 3, "col": 4, "dir": "up"},
-      {"id": "g", "row": 4, "col": 0, "dir": "right"}
-    ],
-    "solution": ["b", "c", "f", "a", "x", "d", "g"]
-  },
-  {
-    "id": "L3",
-    "name": "收束",
-    "rows": 5,
-    "cols": 6,
-    "moves": 3,
-    "par_time": 22,
-    "arrows": [
-      {"id": "p0", "row": 0, "col": 5, "dir": "left"},
-      {"id": "p1", "row": 1, "col": 0, "dir": "down"},
-      {"id": "p2", "row": 1, "col": 2, "dir": "right"},
-      {"id": "p3", "row": 2, "col": 3, "dir": "down"},
-      {"id": "p4", "row": 2, "col": 5, "dir": "up"},
-      {"id": "p5", "row": 3, "col": 0, "dir": "right"},
-      {"id": "p6", "row": 3, "col": 2, "dir": "up"},
-      {"id": "p7", "row": 3, "col": 4, "dir": "up"},
-      {"id": "p8", "row": 4, "col": 5, "dir": "left"}
-    ],
-    "solution": ["p0", "p2", "p3", "p4", "p6", "p7", "p5", "p1", "p8"]
-  },
-  {
     "id": "L4",
     "name": "脉冲走廊",
     "rows": 6,
@@ -88,8 +20,16 @@
       {"id": "l4_11", "row": 2, "col": 4, "dir": "right"},
       {"id": "l4_12", "row": 3, "col": 3, "dir": "right"}
     ],
-    "solution": ["l4_08", "l4_09", "l4_12", "l4_07", "l4_01", "l4_11", "l4_03", "l4_05", "l4_10", "l4_04", "l4_06", "l4_02"],
-    "design_meta": {"depth": 4, "dependencies": 11, "initial_choices": 3}
+    "solution": [
+      "l4_08", "l4_09", "l4_12", "l4_07", "l4_01", "l4_11",
+      "l4_03", "l4_05", "l4_10", "l4_04", "l4_06", "l4_02"
+    ],
+    "design_meta": {
+      "depth": 4,
+      "dependencies": 11,
+      "initial_choices": 3,
+      "note": "直线四向、单格箭头；solution 仅用于验盘，不限制玩家唯一解。"
+    }
   },
   {
     "id": "L5",
@@ -116,8 +56,17 @@
       {"id": "l5_15", "row": 2, "col": 0, "dir": "left"},
       {"id": "l5_16", "row": 2, "col": 2, "dir": "right"}
     ],
-    "solution": ["l5_01", "l5_08", "l5_10", "l5_15", "l5_11", "l5_05", "l5_13", "l5_12", "l5_04", "l5_02", "l5_14", "l5_03", "l5_09", "l5_06", "l5_16", "l5_07"],
-    "design_meta": {"depth": 5, "dependencies": 16, "initial_choices": 4}
+    "solution": [
+      "l5_01", "l5_08", "l5_10", "l5_15", "l5_11", "l5_05",
+      "l5_13", "l5_12", "l5_04", "l5_02", "l5_14", "l5_03",
+      "l5_09", "l5_06", "l5_16", "l5_07"
+    ],
+    "design_meta": {
+      "depth": 5,
+      "dependencies": 16,
+      "initial_choices": 4,
+      "note": "直线四向、单格箭头；solution 仅用于验盘，不限制玩家唯一解。"
+    }
   },
   {
     "id": "L6",
@@ -148,8 +97,17 @@
       {"id": "l6_19", "row": 5, "col": 5, "dir": "down"},
       {"id": "l6_20", "row": 1, "col": 2, "dir": "down"}
     ],
-    "solution": ["l6_03", "l6_11", "l6_13", "l6_14", "l6_15", "l6_18", "l6_19", "l6_05", "l6_08", "l6_02", "l6_04", "l6_12", "l6_07", "l6_06", "l6_20", "l6_16", "l6_10", "l6_01", "l6_09", "l6_17"],
-    "design_meta": {"depth": 6, "dependencies": 21, "initial_choices": 7}
+    "solution": [
+      "l6_03", "l6_11", "l6_13", "l6_14", "l6_15", "l6_18", "l6_19",
+      "l6_05", "l6_08", "l6_02", "l6_04", "l6_12", "l6_07", "l6_06",
+      "l6_20", "l6_16", "l6_10", "l6_01", "l6_09", "l6_17"
+    ],
+    "design_meta": {
+      "depth": 6,
+      "dependencies": 21,
+      "initial_choices": 7,
+      "note": "直线四向、单格箭头；solution 仅用于验盘，不限制玩家唯一解。"
+    }
   },
   {
     "id": "L7",
@@ -186,7 +144,17 @@
       {"id": "l7_25", "row": 3, "col": 2, "dir": "down"},
       {"id": "l7_26", "row": 5, "col": 8, "dir": "down"}
     ],
-    "solution": ["l7_04", "l7_07", "l7_08", "l7_09", "l7_12", "l7_15", "l7_16", "l7_26", "l7_13", "l7_03", "l7_10", "l7_02", "l7_23", "l7_11", "l7_24", "l7_17", "l7_18", "l7_06", "l7_22", "l7_05", "l7_19", "l7_14", "l7_21", "l7_25", "l7_20", "l7_01"],
-    "design_meta": {"depth": 7, "dependencies": 28, "initial_choices": 8}
+    "solution": [
+      "l7_04", "l7_07", "l7_08", "l7_09", "l7_12", "l7_15", "l7_16", "l7_26",
+      "l7_13", "l7_03", "l7_10", "l7_02", "l7_23", "l7_11", "l7_24", "l7_17",
+      "l7_18", "l7_06", "l7_22", "l7_05", "l7_19", "l7_14", "l7_21", "l7_25",
+      "l7_20", "l7_01"
+    ],
+    "design_meta": {
+      "depth": 7,
+      "dependencies": 28,
+      "initial_choices": 8,
+      "note": "直线四向、单格箭头；solution 仅用于验盘，不限制玩家唯一解。"
+    }
   }
 ]

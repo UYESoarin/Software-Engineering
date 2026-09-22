@@ -7,15 +7,19 @@ import pygame
 from . import anim as anim_mod
 from .rules import DIRS
 
-# 配色：深底浅箭（见策划案 3. 流程与界面）
-BG = (30, 32, 40)
-BOARD_BG = (40, 44, 54)
-GRID = (58, 62, 72)
-ARROW = (232, 234, 240)
-BLOCKED = (220, 90, 90)    # 受阻变色
-BTN = (52, 58, 74)
-TEXT = (235, 238, 244)
-HUD = (200, 205, 215)
+# 配色：深色底 + 霓虹（见 GPT E7 Neon Arcade Puzzle）
+BG = (10, 14, 24)
+BOARD_BG = (18, 24, 40)
+GRID = (36, 52, 72)
+ARROW = (80, 220, 255)
+BLOCKED = (255, 92, 106)    # 受阻变色
+BTN = (24, 34, 56)
+BTN_DISABLED = (16, 22, 36)
+TEXT = (236, 244, 255)
+TEXT_DISABLED = (90, 105, 130)
+HUD = (145, 161, 184)
+STAR = (240, 200, 80)
+SUCCESS = (80, 240, 172)
 
 FONT_PATH = "C:/Windows/Fonts/msyh.ttc"
 
@@ -54,10 +58,21 @@ def draw_arrow_alpha(screen, cx, cy, delta, color, s, alpha):
     screen.blit(surf, (int(cx - pad), int(cy - pad)))
 
 
-def draw_button(screen, rect, text, font):
-    """通用按钮：填色 + 居中文字。"""
-    pygame.draw.rect(screen, BTN, rect, border_radius=8)
-    t = font.render(text, True, TEXT)
+def draw_flash_ring(screen, cx, cy, radius, alpha):
+    """碰撞闪光：扩散圆环。"""
+    size = radius * 2 + 4
+    surf = pygame.Surface((size, size), pygame.SRCALPHA)
+    pygame.draw.circle(surf, BLOCKED, (size // 2, size // 2), radius, 2)
+    surf.set_alpha(alpha)
+    screen.blit(surf, (int(cx - size // 2), int(cy - size // 2)))
+
+
+def draw_button(screen, rect, text, font, disabled=False):
+    """通用按钮：填色 + 居中文字；disabled 呈现禁用态。"""
+    color = BTN_DISABLED if disabled else BTN
+    tcolor = TEXT_DISABLED if disabled else TEXT
+    pygame.draw.rect(screen, color, rect, border_radius=8)
+    t = font.render(text, True, tcolor)
     screen.blit(t, t.get_rect(center=rect.center))
 
 
@@ -93,22 +108,30 @@ class BoardView:
         for r in range(rows + 1):
             y = self.oy + r * self.cell
             pygame.draw.line(screen, GRID, (self.ox, y), (self.ox + w, y))
-        # 箭头：受阻的那支变红晃动，其余正常
+        # 箭头：受阻动画中被挡的箭随 anim.x/y 移动，其余正常
         s = int(self.cell * 0.30)
-        blocked_cell = (anim.row, anim.col) if isinstance(anim, anim_mod.Blocked) else None
+        blocked_cell = None
+        if isinstance(anim, anim_mod.BlockedReturn):
+            blocked_cell = (anim.row, anim.col)
         for a in session.arrows:
             cx, cy = self.cell_center(a["row"], a["col"])
             if blocked_cell == (a["row"], a["col"]):
-                draw_arrow(screen, cx + anim.offset_x(), cy, DIRS[a["dir"]], BLOCKED, s)
+                draw_arrow(screen, anim.x, anim.y, DIRS[a["dir"]], BLOCKED, anim.arrow_size)
             else:
                 draw_arrow(screen, cx, cy, DIRS[a["dir"]], ARROW, s)
-        # 飞出动画：该箭已被规则层移除，这里单独画滑出中的那支
+        # 飞出动画：该箭已被规则层移除，单独画滑出中的那支
         if isinstance(anim, anim_mod.FlyOut):
             draw_arrow_alpha(screen, anim.x, anim.y, (anim.dr, anim.dc),
                              anim.color, anim.s, anim.alpha)
+        # 碰撞闪光圆环
+        if isinstance(anim, anim_mod.BlockedReturn) and anim.flash > 0:
+            radius = int(10 + 18 * (1 - anim.flash))
+            draw_flash_ring(screen, anim.impact_x, anim.impact_y, radius, int(180 * anim.flash))
 
-    def draw_hud(self, screen, level, session):
+    def draw_hud(self, screen, level, session, elapsed=None):
         font = load_font(22)
-        text = f"关卡 {level['name']}   ·   余箭 {session.arrows_left}   ·   余次 {session.moves_left}"
+        text = f"{level['name']}    余箭 {session.arrows_left}    余次 {session.moves_left}"
+        if elapsed is not None:
+            text += f"    用时 {elapsed:.1f}s"
         surf = font.render(text, True, TEXT)
         screen.blit(surf, (24, 18))
