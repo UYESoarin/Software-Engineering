@@ -25,15 +25,17 @@ def main():
     scene = scenes.MenuScene(app)
     running = True
     while running:
-        dt = clock.tick(60) / 1000.0
-        for event in pygame.event.get():
+        dt = clock.tick(60) / 1000.0          # 秒；动画与帧率解耦
+        for event in pygame.event.get():      # 必须抽干队列，否则窗口假死
             if event.type == pygame.QUIT:
                 running = False
             else:
-                nxt = scene.handle(event)
+                nxt = scene.handle(event)     # 点选 / 切场景；返回新场景或 None
                 if nxt is not None:
                     scene = nxt
-        scene.update(dt)
+        nxt = scene.update(dt)                # 推进动画；对局胜负也在这里切场景
+        if nxt is not None:
+            scene = nxt
         scene.draw(screen)
         pygame.display.flip()
     pygame.quit()
