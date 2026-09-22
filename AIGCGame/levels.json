@@ -1,0 +1,62 @@
+[
+  {
+    "id": "L0",
+    "name": "教程",
+    "rows": 3,
+    "cols": 5,
+    "moves": 5,
+    "arrows": [
+      {"id": "a", "row": 1, "col": 0, "dir": "right"},
+      {"id": "b", "row": 1, "col": 2, "dir": "up"},
+      {"id": "c", "row": 2, "col": 4, "dir": "left"}
+    ]
+  },
+  {
+    "id": "L1",
+    "name": "顺序入门",
+    "rows": 4,
+    "cols": 4,
+    "moves": 3,
+    "arrows": [
+      {"id": "a", "row": 0, "col": 0, "dir": "down"},
+      {"id": "b", "row": 0, "col": 3, "dir": "left"},
+      {"id": "c", "row": 2, "col": 0, "dir": "right"},
+      {"id": "d", "row": 2, "col": 2, "dir": "up"},
+      {"id": "e", "row": 3, "col": 3, "dir": "right"}
+    ]
+  },
+  {
+    "id": "L2",
+    "name": "交叉",
+    "rows": 5,
+    "cols": 5,
+    "moves": 3,
+    "arrows": [
+      {"id": "b", "row": 0, "col": 4, "dir": "left"},
+      {"id": "a", "row": 1, "col": 1, "dir": "down"},
+      {"id": "c", "row": 1, "col": 3, "dir": "up"},
+      {"id": "d", "row": 2, "col": 0, "dir": "right"},
+      {"id": "x", "row": 2, "col": 2, "dir": "down"},
+      {"id": "f", "row": 3, "col": 4, "dir": "up"},
+      {"id": "g", "row": 4, "col": 0, "dir": "right"}
+    ]
+  },
+  {
+    "id": "L3",
+    "name": "收束",
+    "rows": 5,
+    "cols": 6,
+    "moves": 3,
+    "arrows": [
+      {"id": "p0", "row": 0, "col": 5, "dir": "left"},
+      {"id": "p1", "row": 1, "col": 0, "dir": "down"},
+      {"id": "p2", "row": 1, "col": 2, "dir": "right"},
+      {"id": "p3", "row": 2, "col": 3, "dir": "down"},
+      {"id": "p4", "row": 2, "col": 5, "dir": "up"},
+      {"id": "p5", "row": 3, "col": 0, "dir": "right"},
+      {"id": "p6", "row": 3, "col": 2, "dir": "up"},
+      {"id": "p7", "row": 3, "col": 4, "dir": "up"},
+      {"id": "p8", "row": 4, "col": 5, "dir": "left"}
+    ]
+  }
+]
