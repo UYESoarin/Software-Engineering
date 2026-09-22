@@ -17,7 +17,7 @@ from game import anim, scenes
 
 def click_cell(play, cell):
     """在格子中心模拟左键点击。"""
-    cx, cy = play.view.cell_center(*cell)
+    cx, cy = play.view.cell_center(cell[0], cell[1], play.session.rows, play.session.cols)
     play.handle(pygame.event.Event(pygame.MOUSEBUTTONDOWN, button=1, pos=(int(cx), int(cy))))
 
 
@@ -39,8 +39,8 @@ def arrow_by_id(session, rid):
 
 def main():
     tmp = tempfile.mkdtemp()
-    app = App(save_path=os.path.join(tmp, "save.json"))
     pygame.init()
+    app = App(save_path=os.path.join(tmp, "save.json"))
     screen = pygame.display.set_mode((app.w, app.h))
     pygame.display.set_caption("smoke")
 

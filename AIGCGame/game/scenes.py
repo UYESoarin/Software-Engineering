@@ -108,7 +108,7 @@ class LevelSelectScene:
 
 
 class PlayScene:
-    """对局画面：棋盘 + 顶栏 + 撤销/重开 + 点选结算 + 动画 + 计时 + 存档。
+    """对局画面：棋盘（可缩放/平移）+ 顶栏 + 撤销/重开 + 结算 + 动画 + 计时 + 存档。
 
     结算发生在规则层（try_clear），动画只表现已经发生的结果；
     动画播放期间锁输入，避免一次按下打出两次结算。
@@ -121,25 +121,37 @@ class PlayScene:
         self.session = Session(self.level)
         self.anim = None        # 当前飞出 / 受阻；None 表示可点
         self.elapsed = 0.0      # 本关累计用时（秒）；撤销不回退
-        # 续关：恢复存档的盘面 / 余次 / 用时
         if resume_state and resume_state.get("level_id") == self.level["id"]:
             self.session.load_state(resume_state["arrows"], resume_state["moves_left"])
             self.elapsed = float(resume_state.get("elapsed", 0.0))
-        # 自适应 cell：大盘（如 9×10）也能完整显示，上限 64 px
-        hud_top, bottom_bar, margin = 76, 60, 48
-        max_w = app.w - margin
-        max_h = app.h - hud_top - bottom_bar
-        cell = min(64, max_w // self.level["cols"], max_h // self.level["rows"])
-        bw = self.level["cols"] * cell
-        bh = self.level["rows"] * cell
-        self.view = view.BoardView(
-            origin=((app.w - bw) // 2, hud_top + (max_h - bh) // 2), cell=cell)
+        # 摄像机：自动适配整盘（大盘缩小），支持滚轮缩放 + 中键平移
+        self.view = view.BoardView(app.w, app.h)
+        self.view.fit(self.level["rows"], self.level["cols"])
         self.undo_rect = pygame.Rect(0, 0, 100, 40)
         self.undo_rect.center = (app.w // 2 - 80, app.h - 40)
         self.restart_rect = pygame.Rect(0, 0, 100, 40)
         self.restart_rect.center = (app.w // 2 + 80, app.h - 40)
 
     def handle(self, event):
+        # 摄像机输入（缩放 / 平移 / 归中）
+        if event.type == pygame.MOUSEWHEEL:
+            if self.view.viewport_rect().collidepoint(pygame.mouse.get_pos()):
+                self.view.zoom_at(pygame.mouse.get_pos(), event.y,
+                                  self.session.rows, self.session.cols)
+            return None
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 2:
+            self.view.begin_pan(event.pos)
+            return None
+        if event.type == pygame.MOUSEMOTION and self.view.dragging:
+            self.view.update_pan(event.pos)
+            return None
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 2:
+            self.view.end_pan()
+            return None
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_HOME:
+            self.view.fit(self.session.rows, self.session.cols)
+            return None
+        # 左键点选
         if event.type != pygame.MOUSEBUTTONDOWN or event.button != 1:
             return None
         if self.anim is not None:  # 锁输入：一次结算对应一段动画
@@ -149,32 +161,37 @@ class PlayScene:
             self._save_progress()
             return None
         if self.undo_rect.collidepoint(event.pos):
-            self.session.undo()    # 撤销最近一次结算；无历史为空操作
+            if self.session.undo():
+                self.app.audio.play("undo")
             self._save_progress()
             return None
         cell = self.view.pixel_to_cell(event.pos, self.session.rows, self.session.cols)
         if cell is None:
             return None
+        if self.session.arrow_at(*cell) is not None:
+            self.app.audio.play("click")
         result = self.session.try_clear(*cell)  # 纯逻辑结算，无 pygame
         if result is None:  # 点空白
             return None
         self._save_progress()
         a = result["arrow"]
         if result["type"] == "fly":
-            cx, cy = self.view.cell_center(a["row"], a["col"])
+            self.app.audio.play("fly")
+            cx, cy = self.view.cell_center(a["row"], a["col"], self.session.rows, self.session.cols)
             self.anim = anim.FlyOut(cx, cy, DIRS[a["dir"]],
-                                    int(self.view.cell * 0.30), view.ARROW)
+                                    int(self.view.scaled_cell() * 0.30), view.ARROW)
         else:  # blocked：前冲 → 碰撞 → 回位
-            ax, ay = self.view.cell_center(a["row"], a["col"])
+            self.app.audio.play("blocked")
+            ax, ay = self.view.cell_center(a["row"], a["col"], self.session.rows, self.session.cols)
             b = result["blocker"]
-            bx, by = self.view.cell_center(b["row"], b["col"])
+            bx, by = self.view.cell_center(b["row"], b["col"], self.session.rows, self.session.cols)
             dr, dc = DIRS[a["dir"]]
-            safe = self.view.cell * 0.34        # 停在 blocker 前方一点，避免重叠
+            safe = self.view.scaled_cell() * 0.34
             impact_x = bx - dc * safe
             impact_y = by - dr * safe
             self.anim = anim.BlockedReturn(
                 a["row"], a["col"], ax, ay, impact_x, impact_y,
-                (dr, dc), int(self.view.cell * 0.30))
+                (dr, dc), int(self.view.scaled_cell() * 0.30))
         return None
 
     def _save_progress(self):
@@ -194,6 +211,7 @@ class PlayScene:
     def _check_end(self):
         """依据对局状态切结果画面；正常进行中返回 None。"""
         if self.session.won:
+            self.app.audio.play("clear")
             kind = "win" if self.level_index == len(self.app.levels) - 1 else "pass"
             mistakes = self.level["moves"] - self.session.moves_left
             stats = evaluate(self.level, self.elapsed, mistakes)
@@ -201,6 +219,7 @@ class PlayScene:
             self.app.store.complete_level(self.level["id"], next_id, stats)
             return ResultScene(self.app, kind, self.level_index, stats=stats)
         if self.session.lost:
+            self.app.audio.play("fail")
             self.app.store.clear_in_progress()
             return ResultScene(self.app, "fail", self.level_index)
         return None

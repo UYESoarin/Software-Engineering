@@ -42,6 +42,7 @@
 | P0 扩展实现 | Claude Code | E1 关卡 L4–L7+solver、E2 撤销、E3 受阻前冲返回 | 规则层 9 项 + 冒烟通过 | 待 ChatGPT 审查 |
 | E4 评分计时 | Claude Code | score.py 评分/星级、PlayScene 计时、结果画面星级、大盘自适应 cell | 规则层 + 冒烟通过 | 待 ChatGPT 审查 |
 | P1 存档+选关+UI | Claude Code | save.py 存档/解锁/最佳分、选关界面、继续游戏、霓虹配色 UI | 规则层 11 项 + 冒烟通过 | 待 ChatGPT 审查 |
+| E6/E8/E9 | Claude Code | 摄像机缩放平移、自制音效 + audio.py、pathing.py + PyInstaller 配置 | 规则层 + 冒烟通过 | 待 ChatGPT 审查 |
 
 ---
 
@@ -134,6 +135,7 @@
 | 2026-09-22 22:04 | P0 扩展（E1–E3） | E1 关卡扩至 8 关 + solver.py（依赖图+拓扑排序）；E2 撤销历史栈；E3 受阻前冲返回动画；规则层 9 项 + 冒烟全过 |
 | 2026-09-22 22:16 | E4 评分计时 | score.py 评分/星级、PlayScene 计时、结果画面显示得分/星级/用时/失误；修复大盘（9×10）超出窗口，cell 自适应 |
 | 2026-09-22 23:12 | P1 存档+选关+UI | save.py 存档/解锁/最佳分；选关界面（按解锁进度+星级）；继续游戏（续关）；霓虹配色 UI；规则层 11 项 + 冒烟全过 |
+| 2026-09-22 23:24 | E6/E8/E9 | E6 摄像机缩放/平移/归中；E8 自制 6 音效 + audio.py；E9 pathing.py + requirements/spec/build.bat；规则层 + 冒烟全过 |
 
 ---
 
@@ -195,10 +197,12 @@ AIGCGame/
 │   ├── solver.py          # 规则层：依赖图 + 拓扑排序求解 / 关卡分析（不 import pygame）
 │   ├── score.py           # 规则层：评分 / 星级（不 import pygame）
 │   ├── save.py            # 数据层：本地进度存档（仅标准库）
+│   ├── audio.py           # 表现层：音效统一入口（加载失败不阻塞）
+│   ├── pathing.py         # 工具：资源路径（兼容打包）
 │   ├── levels.py          # 数据层：读 levels.json
-│   ├── view.py            # 表现层：像素↔格子、棋盘 / 箭头 / HUD / 按钮绘制
+│   ├── view.py            # 表现层：摄像机缩放/平移、棋盘 / 箭头 / HUD / 按钮绘制
 │   ├── anim.py            # 表现层：飞出 / 受阻前冲返回动画
-│   └── scenes.py          # 表现层：场景状态机（标题 / 对局 / 结果）
+│   └── scenes.py          # 表现层：场景状态机（标题 / 选关 / 对局 / 结果）
 ├── test_rules.py          # 规则层单元测试（不依赖 pygame）
 ├── test_smoke.py          # 无窗口冒烟测试（dummy 驱动）
 └── notes/                 # 策划 / 过程文档
@@ -226,4 +230,4 @@ AIGCGame/
 
 **约束**：表现层只读规则层结果并画出来；规则层绝不 import pygame；关卡坐标只进 levels.json，不写死在规则里。
 
-**落地进度**：main / rules / solver / score / save / levels / view / anim / scenes 已建；I1–I3 基础功能完整，P0（E1 关卡+solver、E2 撤销、E3 受阻动画）、E4 评分、E5 存档、选关界面、E7 霓虹 UI 均已通过。待做：E6 摄像机缩放、E8 音效、E9 打包、I4（回归 + README + 截图）。
+**落地进度**：I1–I3 基础功能完整，P0（E1 关卡+solver、E2 撤销、E3 受阻动画）、E4 评分、E5 存档、选关界面、E6 摄像机、E7 霓虹 UI、E8 音效、E9 打包配置均已通过。剩余：E9 实际构建验证、I4（回归 + README + 截图 + 博客）。

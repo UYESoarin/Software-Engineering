@@ -1,11 +1,11 @@
 """入口：初始化 pygame，运行「取输入 → 推进 → 画一帧」主循环。"""
 import pygame
 
-from game import levels, save, scenes
+from game import audio, levels, pathing, save, scenes
 
 
 class App:
-    """应用容器：窗口尺寸 + 关卡表 + 进度存档，供各场景读取。"""
+    """应用容器：窗口尺寸 + 关卡表 + 进度存档 + 音效，供各场景读取。"""
 
     WIDTH = 960
     HEIGHT = 640
@@ -15,11 +15,12 @@ class App:
         self.h = self.HEIGHT
         self.levels = levels.load_levels()
         self.store = save.ProgressStore(save_path)
+        self.audio = audio.Audio(pathing.resource_path("assets/sfx"))
 
 
 def main():
-    app = App()
     pygame.init()
+    app = App()
     screen = pygame.display.set_mode((app.w, app.h))
     pygame.display.set_caption("一箭又一箭")
     clock = pygame.time.Clock()

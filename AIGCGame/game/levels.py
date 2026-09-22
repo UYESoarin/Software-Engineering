@@ -1,9 +1,9 @@
 """关卡数据加载。数据与规则分离：改关改 levels.json，不改 rules.py。"""
 import json
-import os
 
-_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_PATH = os.path.join(_ROOT, "levels.json")
+from .pathing import resource_path
+
+DEFAULT_PATH = resource_path("levels.json")
 
 
 def load_levels(path=None):
