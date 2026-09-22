@@ -41,6 +41,7 @@
 | 扩展与优化分析 | ChatGPT | extension_development_summary + levels_extension（优先级、solver/undo/动画/评分/存档/打包方案） | 可直接实施，含可运行代码 | 否（采纳为主） |
 | P0 扩展实现 | Claude Code | E1 关卡 L4–L7+solver、E2 撤销、E3 受阻前冲返回 | 规则层 9 项 + 冒烟通过 | 待 ChatGPT 审查 |
 | E4 评分计时 | Claude Code | score.py 评分/星级、PlayScene 计时、结果画面星级、大盘自适应 cell | 规则层 + 冒烟通过 | 待 ChatGPT 审查 |
+| P1 存档+选关+UI | Claude Code | save.py 存档/解锁/最佳分、选关界面、继续游戏、霓虹配色 UI | 规则层 11 项 + 冒烟通过 | 待 ChatGPT 审查 |
 
 ---
 
@@ -95,7 +96,7 @@
 |---|---|---|---|
 | 受阻动画 | 仅左右晃动 | 前冲 → 碰撞 → 回位 | ✅ 已升级（E3） |
 | 撤销 | 只有重开 | 加结算历史栈 | ✅ 已加（E2） |
-| 关卡选择 | 只能顺序推进 | 标题加关卡选择 | 待做 |
+| 关卡选择 | 只能顺序推进 | 标题加关卡选择 | ✅ 已加选关界面 |
 | 提示 UI | `can_fly` 已就绪未接界面 | 接提示按钮 | 待做 |
 | 音效 | 无 | 飞出 / 受阻短音 | 待做 |
 | 打包 | 源码运行 | `pyinstaller` 出 exe | 待做 |
@@ -116,8 +117,9 @@
 | T08 | 撤销失误扣次 | 余次恢复 | 规则层 `test_undo_blocked` 通过 | 是 |
 | T09 | 所有关卡可解 | solver 有完整解序 | 规则层 `test_solver_all_levels` 通过 | 是 |
 | T10 | solution 与规则一致 | 参考解清空本关 | 规则层 `test_reference_solution` 通过 | 是 |
+| T11 | 存档 round-trip | 读回一致 + 解锁 + 最佳分 | 规则层 `test_save_roundtrip` 通过 | 是 |
 
-> T01–T10 已由 `test_rules.py` + `test_smoke.py` 自动化覆盖；真实窗口下的视觉效果待本人实测回填。
+> T01–T11 已由 `test_rules.py` + `test_smoke.py` 自动化覆盖；真实窗口下的视觉效果待本人实测回填。
 
 ---
 
@@ -131,6 +133,7 @@
 | 2026-09-22 19:23 | I3 交付 | 实现关卡闭环：结果画面（通过/失败/全通）、清空进下一关、余次耗尽失败、重开按钮；补全注释；规则层单测 + 冒烟全过 |
 | 2026-09-22 22:04 | P0 扩展（E1–E3） | E1 关卡扩至 8 关 + solver.py（依赖图+拓扑排序）；E2 撤销历史栈；E3 受阻前冲返回动画；规则层 9 项 + 冒烟全过 |
 | 2026-09-22 22:16 | E4 评分计时 | score.py 评分/星级、PlayScene 计时、结果画面显示得分/星级/用时/失误；修复大盘（9×10）超出窗口，cell 自适应 |
+| 2026-09-22 23:12 | P1 存档+选关+UI | save.py 存档/解锁/最佳分；选关界面（按解锁进度+星级）；继续游戏（续关）；霓虹配色 UI；规则层 11 项 + 冒烟全过 |
 
 ---
 
@@ -191,6 +194,7 @@ AIGCGame/
 │   ├── rules.py           # 规则层：盘面 / 射线 / 余次 / 快照 / 撤销历史（不 import pygame）
 │   ├── solver.py          # 规则层：依赖图 + 拓扑排序求解 / 关卡分析（不 import pygame）
 │   ├── score.py           # 规则层：评分 / 星级（不 import pygame）
+│   ├── save.py            # 数据层：本地进度存档（仅标准库）
 │   ├── levels.py          # 数据层：读 levels.json
 │   ├── view.py            # 表现层：像素↔格子、棋盘 / 箭头 / HUD / 按钮绘制
 │   ├── anim.py            # 表现层：飞出 / 受阻前冲返回动画
@@ -217,8 +221,9 @@ AIGCGame/
 | 规则层 | rules.py | 无（纯逻辑） |
 | 规则层 | solver.py | rules（DIRS） |
 | 规则层 | score.py | 无（纯逻辑） |
+| 数据 | save.py | 标准库 json / os |
 | 数据 | levels.py | 标准库 json / os |
 
 **约束**：表现层只读规则层结果并画出来；规则层绝不 import pygame；关卡坐标只进 levels.json，不写死在规则里。
 
-**落地进度**：main / rules / solver / score / levels / view / anim / scenes 已建；I1–I3 基础功能完整，P0（E1 关卡+solver、E2 撤销、E3 受阻动画）+ E4 评分计时已通过。待做：E5 存档、E6 摄像机缩放、E7 UI、E8 音效、E9 打包、I4（回归 + README + 截图）。
+**落地进度**：main / rules / solver / score / save / levels / view / anim / scenes 已建；I1–I3 基础功能完整，P0（E1 关卡+solver、E2 撤销、E3 受阻动画）、E4 评分、E5 存档、选关界面、E7 霓虹 UI 均已通过。待做：E6 摄像机缩放、E8 音效、E9 打包、I4（回归 + README + 截图）。
